@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini App Магазин</title>
-    <script src="https://telegram.org"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,7 +16,7 @@
             border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px;
             background: var(--tg-theme-secondary-bg-color, #f9f9f9);
         }
-        .select-btn {
+        button {
             background-color: var(--tg-theme-button-color, #248bcf);
             color: var(--tg-theme-button-text-color, #fff);
             border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;
@@ -31,38 +31,63 @@
     <div class="product-card">
         <h3>Товар 1: Крутая футболка</h3>
         <p>Цена: 1500 руб.</p>
-        <button class="select-btn" onclick="selectItem('Крутая футболка', 1500)">Выбрать</button>
+        <button onclick="orderItem('Крутая футболка', 1500)">Купить</button>
     </div>
 
     <div class="product-card">
         <h3>Товар 2: Стильная кепка</h3>
         <p>Цена: 800 руб.</p>
-        <button class="select-btn" onclick="selectItem('Стильная кепка', 800)">Выбрать</button>
+        <button onclick="orderItem('Стильная кепка', 800)">Купить</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let currentOrder = null;
-
-        function selectItem(name, price) {
-            // Сохраняем выбранный товар
-            currentOrder = { product: name, price: price };
+        function orderItem(name, price) {
+            // Извлекаем параметры запуска (ID пользователя и чата)
+            const initData = tg.initData;
             
-            // Настраиваем Главную Кнопку Telegram внизу экрана
-            tg.MainButton.text = `Оформить заказ: ${name} (${price} руб.)`;
-            tg.MainButton.textColor = "#FFFFFF";
-            tg.MainButton.color = "#2ec761"; // Зеленый цвет кнопки оформления
-            tg.MainButton.show(); // Показываем её пользователю
-        }
-
-        # Касание по Главной Кнопке Telegram отправляет данные
-        tg.onEvent('mainButtonClicked', function() {
-            if (currentOrder) {
-                tg.sendData(JSON.stringify(currentOrder));
+            if (!initData) {
+                alert("Ошибка: Приложение запущено вне Telegram или данные недоступны.");
+                return;
             }
-        });
+
+            // Формируем заказ
+            const orderPayload = {
+                init_data: initData,
+                product: name,
+                price: price
+            };
+
+            // Отправляем данные напрямую через веб-запрос на ваш сервер бота (используем webhook-прокси для тестов)
+            // ПРИМЕЧАНИЕ: Вместо ВАШ_ТОКЕН_БОТА вставьте ваш токен ниже (прямо внутри ссылки в коде JS)
+            const botToken = "9052144019:AAE3BgyOAPOIYROR83xyC_sF1kOmmX4rn7o"; 
+            
+            // Парсим initData для получения chat_id
+            const urlParams = new URLSearchParams(initData);
+            const userRaw = urlParams.get('user');
+            if (userRaw) {
+                const user = JSON.parse(userRaw);
+                const chatId = user.id;
+                const text = `🎉 Спасибо за заказ!\n\nВы выбрали: *${name}*\nК оплате: *${price} руб.*`;
+
+                // Отправляем запрос напрямую в Telegram Bot API
+                fetch(`https://telegram.org{botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: text,
+                        parse_mode: 'Markdown'
+                    })
+                }).then(() => {
+                    tg.close(); // Закрываем магазин после отправки
+                }).catch((err) => {
+                    alert("Ошибка отправки: " + err);
+                });
+            }
+        }
     </script>
 </body>
 </html>
