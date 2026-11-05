@@ -3,83 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini App Магазин</title>
+    <title>Тест Магазина</title>
     <script src="https://telegram.org"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #fff);
-            color: var(--tg-theme-text-color, #000);
-            margin: 0; padding: 20px; text-align: center;
-        }
-        .product-card {
-            border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px;
-            background: var(--tg-theme-secondary-bg-color, #f9f9f9);
-        }
-        button {
-            background-color: var(--tg-theme-button-color, #248bcf);
-            color: var(--tg-theme-button-text-color, #fff);
-            border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;
-            font-weight: bold;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #fff; }
+        .card { border: 1px solid #ccc; padding: 15px; margin: 10px; border-radius: 8px; background: #f9f9f9; }
+        button { background: #248bcf; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h2>Наш Магазин 🛍</h2>
+    <h2>Проверка кнопок магазина 🛍</h2>
     
-    <div class="product-card">
-        <h3>Товар 1: Крутая футболка</h3>
+    <div class="card">
+        <h3>Товар: Крутая футболка</h3>
         <p>Цена: 1500 руб.</p>
-        <button onclick="orderItem('Крутая футболка', 1500)">Купить</button>
-    </div>
-
-    <div class="product-card">
-        <h3>Товар 2: Стильная кепка</h3>
-        <p>Цена: 800 руб.</p>
-        <button onclick="orderItem('Стильная кепка', 800)">Купить</button>
+        <button onclick="orderItem('Крутая футболка', 1500)">Купить товар</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ЧИТАЙ ВНИМАТЕЛЬНО: Вставь сюда свой токен от BotFather прямо вместо текста ниже!
-        // Пример: const botToken = "123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ";
+        // ВНИМАТЕЛЬНО проверьте, чтобы ваш токен был внутри этих кавычек!
         const botToken = "9052144019:AAE3BgyOAPOIYROR83xyC_sF1kOmmX4rn7o"; 
 
         function orderItem(name, price) {
-            const initData = tg.initData;
-            
-            if (!initData) {
-                alert("Ошибка запуска вне Telegram");
+            // Проверяем, вставили ли вы токен
+            if (botToken.includes("СЮДА_ВСТАВЬ_ТОКЕН")) {
+                alert("Ошибка: Вы забыли заменить текст 'СЮДА_ВСТАВЬ_ТОКЕН' на реальный токен в коде GitHub!");
                 return;
             }
 
-            // Извлекаем ID чата пользователя, чтобы бот знал, кому писать
+            const initData = tg.initData;
+            if (!initData) {
+                alert("Ошибка: Telegram заблокировал передачу данных (initData пустой).");
+                return;
+            }
+
             const urlParams = new URLSearchParams(initData);
             const userRaw = urlParams.get('user');
             
-            if (userRaw) {
-                const user = JSON.parse(userRaw);
-                const chatId = user.id;
-                const text = `🎉 *Спасибо за заказ!*\n\nВы выбрали: *${name}*\nК оплате: *${price} руб.*`;
-
-                // Отправляем запрос на сообщение напрямую через API Telegram
-                fetch(`https://telegram.org{botToken}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: chatId,
-                        text: text,
-                        parse_mode: 'Markdown'
-                    })
-                }).then(() => {
-                    tg.close(); // Закрываем магазин
-                }).catch((err) => {
-                    alert("Ошибка: " + err);
-                });
+            if (!userRaw) {
+                alert("Ошибка: Не удалось получить данные вашего профиля Telegram.");
+                return;
             }
+
+            const user = JSON.parse(userRaw);
+            const chatId = user.id;
+            const text = `🎉 *Заказ оформлен!*\n\nВы выбрали: *${name}*\nЦена: *${price} руб.*`;
+
+            // Отправляем запрос
+            fetch(`https://telegram.org{botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'Markdown' })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Успешно! Запрос ушел, закрываем окно.");
+                    tg.close();
+                } else {
+                    alert("Сервер Telegram вернул ошибку. Проверьте правильность токена бота!");
+                }
+            })
+            .catch((err) => {
+                alert("Системная ошибка сети: " + err);
+            });
         }
     </script>
 </body>
