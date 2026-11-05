@@ -1,1 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini App Магазин</title>
+    <!-- Подключаем официальный скрипт Telegram Web App -->
+    <script src="https://telegram.org"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+            margin: 0; padding: 20px; text-align: center;
+        }
+        .product-card {
+            border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px;
+            background: var(--tg-theme-secondary-bg-color, #f9f9f9);
+        }
+        button {
+            background-color: var(--tg-theme-button-color, #248bcf);
+            color: var(--tg-theme-button-text-color, #fff);
+            border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Наш Магазин 🛍</h2>
+    
+    <div class="product-card">
+        <h3>Товар 1: Крутая футболка</h3>
+        <p>Цена: 1500 руб.</p>
+        <button onclick="orderItem('Крутая футболка', 1500)">Купить</button>
+    </div>
+
+    <div class="product-card">
+        <h3>Товар 2: Стильная кепка</h3>
+        <p>Цена: 800 руб.</p>
+        <button onclick="orderItem('Стильная кепка', 800)">Купить</button>
+    </div>
+
+    <script>
+        // Инициализируем Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Расширяем приложение на весь экран
+
+        function orderItem(name, price) {
+            // Создаем объект с данными заказа
+            const data = {
+                product: name,
+                price: price
+            };
+            
+            // Отправляем данные обратно в бота (строкой JSON)
+            tg.sendData(JSON.stringify(data));
+            
+            // Закрываем Web App
+            tg.close();
+        }
+    </script>
+</body>
+</html>
 
