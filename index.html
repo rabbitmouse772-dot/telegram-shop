@@ -44,14 +44,42 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
+        // ЧИТАЙ ВНИМАТЕЛЬНО: Вставь сюда свой токен от BotFather прямо вместо текста ниже!
+        // Пример: const botToken = "123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ";
+        const botToken = "9052144019:AAE3BgyOAPOIYROR83xyC_sF1kOmmX4rn7o"; 
+
         function orderItem(name, price) {
-            const data = {
-                product: name,
-                price: price
-            };
-            // Передаем данные напрямую через официальный безопасный метод Mini App
-            tg.sendData(JSON.stringify(data));
-            tg.close();
+            const initData = tg.initData;
+            
+            if (!initData) {
+                alert("Ошибка запуска вне Telegram");
+                return;
+            }
+
+            // Извлекаем ID чата пользователя, чтобы бот знал, кому писать
+            const urlParams = new URLSearchParams(initData);
+            const userRaw = urlParams.get('user');
+            
+            if (userRaw) {
+                const user = JSON.parse(userRaw);
+                const chatId = user.id;
+                const text = `🎉 *Спасибо за заказ!*\n\nВы выбрали: *${name}*\nК оплате: *${price} руб.*`;
+
+                // Отправляем запрос на сообщение напрямую через API Telegram
+                fetch(`https://telegram.org{botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: text,
+                        parse_mode: 'Markdown'
+                    })
+                }).then(() => {
+                    tg.close(); // Закрываем магазин
+                }).catch((err) => {
+                    alert("Ошибка: " + err);
+                });
+            }
         }
     </script>
 </body>
