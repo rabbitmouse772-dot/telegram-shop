@@ -45,16 +45,11 @@
         tg.expand();
 
         function orderItem(name, price) {
-            // Создаем объект с данными заказа
             const orderData = {
                 product: name,
                 price: price
             };
-            
-            // Отправляем данные в Telegram (в Mini App это работает и на ПК!)
             tg.sendData(JSON.stringify(orderData));
-            
-            // Принудительно закрываем окно магазина
             tg.close();
         }
     </script>
